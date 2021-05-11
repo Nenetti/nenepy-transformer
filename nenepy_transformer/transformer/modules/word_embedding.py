@@ -1,7 +1,6 @@
 import torch
+from nenepy_transformer.attention.utils import AttentionMask
 from torch import nn
-
-from nenepy_transformer.modules.transformer import AttentionMask
 
 
 class WordEmbedding(nn.Module):
@@ -30,7 +29,6 @@ class WordEmbedding(nn.Module):
 
         embeddings = self._embedding(batch_words)
         attention_masks = AttentionMask().generate_disable_next_step_and_padding(batch_words)
-        print(attention_masks)
         return embeddings, attention_masks
 
     @staticmethod

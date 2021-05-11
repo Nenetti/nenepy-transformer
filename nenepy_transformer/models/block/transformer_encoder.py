@@ -1,15 +1,14 @@
+from nenepy_transformer.attention.blocks import EncoderAttentionBlock
 from torch import nn
-
-from nenepy_transformer.modules.transformer import WordEmbedding, PositionalEncoding, EncoderAttentionBlock
 
 
 class TransformerEncoder(nn.Module):
 
-    def __init__(self, n_attention_block, n_head, n_words, n_embedding_dim, max_sentence_length, dropout_rate=0.1, padding_idx=None):
+    def __init__(self, n_attention_block, n_head, embedding_dim, dropout_rate=0.1, padding_idx=None):
         super(TransformerEncoder, self).__init__()
-        self._word_embedding = WordEmbedding(n_words, n_embedding_dim, padding_idx)
-        self._positional_encoding = PositionalEncoding(n_embedding_dim, max_sentence_length)
-        self._self_attentions = nn.ModuleList([EncoderAttentionBlock(n_embedding_dim, n_head, dropout_rate) for _ in range(n_attention_block)])
+        self._self_attentions = nn.ModuleList(
+            [EncoderAttentionBlock(embedding_dim, n_head, dropout_rate) for _ in range(n_attention_block)]
+        )
 
         self._n_attention_block = n_attention_block
 
@@ -18,10 +17,8 @@ class TransformerEncoder(nn.Module):
     #   Instance Method (Public)
     #
     # ==================================================================================================
-    def forward(self, x):
-        embeddings, attention_masks = self._word_embedding(x)
-        embeddings = self._positional_encoding(embeddings)
-        output = embeddings
+    def forward(self, x, attention_masks=None):
+        output = x
 
         outputs = [None] * self._n_attention_block
         attentions = [None] * self._n_attention_block

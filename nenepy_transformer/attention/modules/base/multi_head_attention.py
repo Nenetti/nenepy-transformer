@@ -2,7 +2,7 @@ import torch
 
 # https://www.acceluniverse.com/blog/developers/2019/08/attention.html
 # https://qiita.com/halhorn/items/c91497522be27bde17ce
-from nenepy_transformer.modules.attentions.base import SingleHeadAttention
+from nenepy_transformer.attention.modules.base import SingleHeadAttention
 
 
 class MultiHeadAttention(SingleHeadAttention):

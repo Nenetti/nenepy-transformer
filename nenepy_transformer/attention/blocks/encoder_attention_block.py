@@ -1,6 +1,6 @@
+from nenepy_transformer.attention.modules.self import MultiHeadSelfAttention, SingleHeadSelfAttention
+from nenepy_transformer.transformer.modules import PositionWiseFeedForwardNetwork, ResidualBlock
 from torch import nn
-
-from nenepy_transformer.modules.transformer import SelfAttention, PositionWiseFeedForwardNetwork, ResidualBlock, SelfMultiHeadAttention
 
 
 class EncoderAttentionBlock(nn.Module):
@@ -17,9 +17,9 @@ class EncoderAttentionBlock(nn.Module):
         super(EncoderAttentionBlock, self).__init__()
 
         if n_head > 1:
-            self._attention = SelfMultiHeadAttention(n_embeddings, n_head, dropout_rate)
+            self._attention = MultiHeadSelfAttention(n_embeddings, n_head, dropout_rate)
         else:
-            self._attention = SelfAttention(n_embeddings, dropout_rate)
+            self._attention = SingleHeadSelfAttention(n_embeddings, dropout_rate)
 
         self._ffn = PositionWiseFeedForwardNetwork(n_embeddings)
         self._attention_dropout_norm = ResidualBlock(n_embeddings, dropout_rate)

@@ -1,12 +1,15 @@
+import matplotlib.pyplot as plt
 import torch
 from torch import nn
-import matplotlib.pyplot as plt
 
 
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, n_features, max_sentence_length):
+    def __init__(self, n_features, max_sentence_length=100):
         super(PositionalEncoding, self).__init__()
+        self._n_features = n_features
+        self._max_sentence_length = max_sentence_length
+
         pe = self.generate_positional_embedding(n_features, max_sentence_length)
         self.register_buffer("_pe", pe)
 
@@ -17,6 +20,10 @@ class PositionalEncoding(nn.Module):
     # ==================================================================================================
     def forward(self, x):
         B, W, N = x.shape
+        if W > self._max_sentence_length:
+            pe = self.generate_positional_embedding(self._n_features, W)
+            self.register_buffer("_pe", pe)
+
         return x + self._pe[:, :W]
 
     # ==================================================================================================
