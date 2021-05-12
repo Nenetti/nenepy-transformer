@@ -43,7 +43,6 @@ class MultiHeadAttention(SingleHeadAttention):
         attention_weight = torch.matmul(query, key.transpose(-2, -1))
         if attention_mask is not None:
             attention_weight += attention_mask.unsqueeze(dim=1)
-
         attention_weight = torch.softmax(attention_weight * self._scale, dim=-1)
         attention_weight = self._dropout_layer(attention_weight)
 
@@ -62,9 +61,9 @@ class MultiHeadAttention(SingleHeadAttention):
             torch.Tensor:
 
         """
-        B, W, _ = x.shape
-        x = x.view(B, W, self._n_heads, self._head_out_features)
-        return x.permute(0, 2, 1, 3)
+        shape = list(x.shape)[:-1] + [self._n_heads, self._head_out_features]
+        x = x.view(shape)
+        return x.transpose(-2, -3)
 
     def _concat_head(self, x):
         """
@@ -75,6 +74,6 @@ class MultiHeadAttention(SingleHeadAttention):
             torch.Tensor:
 
         """
-        x = x.permute(0, 2, 1, 3)
-        B, W, _, _ = x.shape
-        return x.contiguous().view(B, W, self._n_embeddings)
+        x = x.transpose(-2, -3)
+        shape = list(x.shape)[:-2] + [self._n_embeddings]
+        return x.contiguous().view(shape)

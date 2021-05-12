@@ -69,6 +69,8 @@ class SingleHeadAttention(nn.Module):
         """
         query = self._query_layer(input_tensor)
         kv = self._key_value_layer(memory_tensor)
-        B, W, _ = kv.shape
-        key, value = kv.view(2, B, W, self._n_embeddings)
+        shape = list(kv.shape)
+        shape[-1] = self._n_embeddings
+        key, value = kv.view(2, *shape)
+
         return query, key, value
