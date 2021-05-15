@@ -22,7 +22,7 @@ class PositionalEncoding(nn.Module):
         B, W, N = x.shape
         if W > self._max_sentence_length:
             pe = self.generate_positional_embedding(self._n_features, W)
-            self.register_buffer("_pe", pe)
+            self.register_buffer("_pe", pe.to(x.device))
 
         return x + self._pe[:, :W]
 

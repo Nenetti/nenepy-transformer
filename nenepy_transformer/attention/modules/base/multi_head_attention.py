@@ -34,15 +34,19 @@ class MultiHeadAttention(SingleHeadAttention):
             (torch.Tensor, torch.Tensor):
 
         """
-        query, key, value = self.forward_query_key_value(input_tensor, memory_tensor)
 
+        memory_tensor = self._fit_shape(memory_tensor, input_tensor)
+
+        query, key, value = self.forward_query_key_value(input_tensor, memory_tensor)
         query = self._to_multi_head_patch(query)
         key = self._to_multi_head_patch(key)
         value = self._to_multi_head_patch(value)
 
         attention_weight = torch.matmul(query, key.transpose(-2, -1))
         if attention_mask is not None:
-            attention_weight += attention_mask.unsqueeze(dim=1)
+            # print("A", attention_weight.shape, self._fit_attention_mask(attention_mask, attention_weight).shape)
+            attention_weight += self._fit_shape(attention_mask, attention_weight)
+            # attention_weight += attention_mask.unsqueeze(dim=1)
         attention_weight = torch.softmax(attention_weight * self._scale, dim=-1)
         attention_weight = self._dropout_layer(attention_weight)
 
@@ -51,6 +55,18 @@ class MultiHeadAttention(SingleHeadAttention):
         output = self._output_layer(output)
 
         return output, attention_weight
+
+    @staticmethod
+    def _fit_shape(source, target):
+        if source.ndim == target.ndim:
+            return source
+
+        n_dim = target.ndim
+        shape = [1] * n_dim
+        shape[0] = target.shape[0]
+        shape[-2] = target.shape[-2]
+        shape[-1] = target.shape[-1]
+        return source.view(shape)
 
     def _to_multi_head_patch(self, x):
         """
