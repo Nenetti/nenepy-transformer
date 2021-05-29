@@ -1,12 +1,13 @@
+from torch import nn
+
 from nenepy_transformer.attention.modules.self import MultiHeadSelfAttention, SingleHeadSelfAttention
 from nenepy_transformer.attention.modules.source_target import SourceTargetMultiHeadAttention, SourceTargetSingleHeadAttention
 from nenepy_transformer.transformer.modules import PositionWiseFeedForwardNetwork, ResidualBlock
-from torch import nn
 
 
 class DecoderAttentionBlock(nn.Module):
 
-    def __init__(self, n_embeddings, n_head, dropout_rate=0.1):
+    def __init__(self, n_embeddings, n_head, dropout_rate=0.1, depth=-1):
         """
 
         Args:
@@ -17,8 +18,8 @@ class DecoderAttentionBlock(nn.Module):
         """
         super(DecoderAttentionBlock, self).__init__()
         if n_head > 1:
-            self._self_attention = MultiHeadSelfAttention(n_embeddings, n_head, dropout_rate)
-            self._attention = SourceTargetMultiHeadAttention(n_embeddings, n_head, dropout_rate)
+            self._self_attention = MultiHeadSelfAttention(n_embeddings, n_head, dropout_rate, depth)
+            self._attention = SourceTargetMultiHeadAttention(n_embeddings, n_head, dropout_rate, depth)
         else:
             self._self_attention = SingleHeadSelfAttention(n_embeddings, dropout_rate)
             self._attention = SourceTargetSingleHeadAttention(n_embeddings, dropout_rate)
@@ -33,14 +34,14 @@ class DecoderAttentionBlock(nn.Module):
     #   Instance Method (Public)
     #
     # ==================================================================================================
-    def forward(self, input_tensor, memory_tensor, attention_masks=None):
-        attention_output, _ = self._self_attention(input_tensor, attention_masks)
-        attention_output = self._self_attention_dropout_norm(attention_output, input_tensor)
+    def forward(self, input_tensor, memory_tensor, self_attention_masks=None, source_target_attention_mask=None):
+        self_attention_output, _ = self._self_attention(input_tensor, self_attention_masks)
+        self_attention_output = self._self_attention_dropout_norm(self_attention_output, input_tensor)
 
-        attention_output, attention = self._attention(attention_output, memory_tensor, attention_masks)
-        attention_output = self._attention_dropout_norm(attention_output, input_tensor)
+        source_target_attention_output, attention = self._attention(self_attention_output, memory_tensor, source_target_attention_mask)
+        source_target_attention_output = self._attention_dropout_norm(source_target_attention_output, input_tensor)
 
-        ffn_output = self._ffn(attention_output)
-        ffn_output = self._ffn_dropout_norm(x=ffn_output, skip_x=attention_output)
+        ffn_output = self._ffn(source_target_attention_output)
+        ffn_output = self._ffn_dropout_norm(ffn_output, source_target_attention_output)
 
         return ffn_output, attention

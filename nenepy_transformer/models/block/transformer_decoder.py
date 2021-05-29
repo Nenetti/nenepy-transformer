@@ -1,5 +1,4 @@
 from nenepy_transformer.attention.blocks import DecoderAttentionBlock
-from nenepy_transformer.transformer.modules import WordEmbedding, PositionalEncoding
 from torch import nn
 
 
@@ -8,7 +7,7 @@ class TransformerDecoder(nn.Module):
     def __init__(self, n_attention_block, n_head, embedding_dim, dropout_rate=0.1, padding_idx=None):
         super(TransformerDecoder, self).__init__()
         self._self_attentions = nn.ModuleList(
-            [DecoderAttentionBlock(embedding_dim, n_head, dropout_rate) for _ in range(n_attention_block)]
+            [DecoderAttentionBlock(embedding_dim, n_head, dropout_rate, i) for i in range(n_attention_block)]
         )
 
         self._n_attention_block = n_attention_block
@@ -18,13 +17,13 @@ class TransformerDecoder(nn.Module):
     #   Instance Method (Public)
     #
     # ==================================================================================================
-    def forward(self, x, memories, attention_masks=None):
-        output = x
+    def forward(self, inputs, memories, self_attention_masks=None, source_target_attention_mask=None):
+        output = inputs
 
         outputs = [None] * self._n_attention_block
         attentions = [None] * self._n_attention_block
         for i, block in enumerate(self._self_attentions):
-            output, attention = block(output, memories[i], attention_masks)
+            output, attention = block(output, memories[i], self_attention_masks, source_target_attention_mask)
             outputs[i] = output
             attentions[i] = attention
 

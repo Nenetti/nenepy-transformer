@@ -31,10 +31,10 @@ class EncoderAttentionBlock(nn.Module):
     #
     # ==================================================================================================
     def forward(self, input_tensor, attention_masks=None):
-        attention_output, attention = self._attention(input_tensor, attention_masks)
-        attention_output = self._attention_dropout_norm(attention_output, input_tensor)
+        output, attention = self._attention(input_tensor, attention_masks)
+        output = self._attention_dropout_norm(output, input_tensor)
 
-        ffn_output = self._ffn(attention_output)
-        ffn_output = self._ffn_dropout_norm(ffn_output, attention_output)
+        ffn_output = self._ffn(output)
+        ffn_output = self._ffn_dropout_norm(ffn_output, output)
 
         return ffn_output, attention

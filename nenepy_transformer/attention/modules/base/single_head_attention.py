@@ -43,7 +43,7 @@ class SingleHeadAttention(nn.Module):
             (torch.Tensor, torch.Tensor):
 
         """
-        query, key, value = self.forward_query_key_value(input_tensor, memory_tensor)
+        query, key, value = self._to_query_key_value(input_tensor, memory_tensor)
 
         attention_weight = torch.matmul(query, key.transpose(-2, -1))
         if attention_mask is not None:
@@ -57,7 +57,7 @@ class SingleHeadAttention(nn.Module):
 
         return output, attention_weight
 
-    def forward_query_key_value(self, input_tensor, memory_tensor):
+    def _to_query_key_value(self, input_tensor, memory_tensor):
         """
         Args:
             input_tensor (torch.Tensor):

@@ -18,5 +18,4 @@ class ResidualBlock(nn.Module):
         )
 
     def forward(self, x, skip_x):
-        x = self._layers(x)
-        return x + skip_x
+        return self._layers(x) + skip_x
