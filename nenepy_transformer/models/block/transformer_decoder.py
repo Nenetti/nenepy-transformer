@@ -17,14 +17,19 @@ class TransformerDecoder(nn.Module):
     #   Instance Method (Public)
     #
     # ==================================================================================================
-    def forward(self, inputs, memories, self_attention_masks=None, source_target_attention_mask=None):
+    def forward(self, inputs, memories, self_attention_masks=None, source_target_attention_masks=None):
         output = inputs
 
-        outputs = [None] * self._n_attention_block
-        attentions = [None] * self._n_attention_block
+        if source_target_attention_masks is None:
+            source_target_attention_masks = [None] * self._n_attention_block
+        else:
+            source_target_attention_masks = source_target_attention_masks.detach()
+
+        outputs = []
+        attentions = []
         for i, block in enumerate(self._self_attentions):
-            output, attention = block(output, memories[i], self_attention_masks, source_target_attention_mask)
-            outputs[i] = output
-            attentions[i] = attention
+            output, attention = block(output, memories[i], self_attention_masks, source_target_attention_masks[i])
+            outputs.append(output)
+            attentions.append(attention)
 
         return outputs, attentions
